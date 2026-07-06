@@ -226,6 +226,17 @@ function dapatkanPropertiTahun(namaKlaster) {
   return 'P571'; // Didirikan / Inception
 }
 
+function aturTampilanNegara() {
+  let provInput = document.getElementById('provinsi-input').value;
+  let wadahNegara = document.getElementById('wadah-negara');
+  
+  if (provInput === 'luar_negeri') {
+    wadahNegara.style.display = 'block';
+  } else {
+    wadahNegara.style.display = 'none';
+  }
+}
+
 // Di dalam populateProvinceTypesData (JS 2)
 function populateProvinceTypesData() {
   let inputTxt = document.getElementById('jenis-input').value.trim();
@@ -280,11 +291,32 @@ function populateProvinceTypesData() {
   if (currentNamaKlaster === 'Publikasi') {
     filterNasional = '?s wdt:P407 wd:Q9240 .';
   }
-
+if (provInput === 'luar_negeri') {
+    let negaraDropdown = document.getElementById('negara-input');
+    let negaraValue = negaraDropdown.value;
+    currentNamaWilayah = negaraDropdown.options[negaraDropdown.selectedIndex].text; // Ubah teks UI ke nama negara
+    
+    // Ganti deskripsi judul di UI
+    if (brandingDesc) brandingDesc.textContent = `${currentNamaKlaster} di ${currentNamaWilayah}`;
+    
+    baseQuery = KUMPULAN_KUERI_0['luar_negeri'];
+    
+    let dynamicQuery = baseQuery
+      .replace(/<PLACEHOLDER_JENIS>/g, inputTxt)
+      .replace(/<PLACEHOLDER_NEGARA>/g, negaraValue)
+      .replace(/<PLACEHOLDER_PROP_LOKASI>/g, propLokasi)
+      .replace(/<PLACEHOLDER_PROP_TAHUN>/g, propTahun);
+      
+    // (Langsung kirim dan hentikan fungsi di sini)
+    return eksekusiKueriKeWikidata(dynamicQuery); 
+  }
+  
+  // ==========================================
+  // CABANG LAMA: INDONESIA (Tetap Utuh)
+  // ==========================================
   if (provInput === 'all') {
     wilayahClause1 = '?p wdt:P31 wd:Q5098 .';
     
-    // Cegah penimpaan ke 'khusus_negara_all' jika sedang dalam mode 'apapun'
     if (isKhususNasional && inputTxt.toLowerCase() !== 'apapun') {
       baseQuery = KUMPULAN_KUERI_0['khusus_negara_all'];
     }
@@ -328,11 +360,13 @@ function populateProvinceTypesData() {
     .replace(/<PLACEHOLDER_UNION_EKSTRA>/g, unionEkstra) 
     .replace(/<PLACEHOLDER_JENIS>/g, inputTxt);
 
-  console.log("Kueri 0 (Tipe & Provinsi) yang dikirim:", dynamicQuery);
+return eksekusiKueriKeWikidata(dynamicQuery);
 
-  return queryWdqsPaginated(
-    dynamicQuery,
-function(result) {
+  function eksekusiKueriKeWikidata(kueriFinal) {
+    console.log("Kueri yang dikirim:", kueriFinal);
+    return queryWdqsPaginated(
+      kueriFinal,
+      function(result) {
       // Menggunakan variabel JSON singkatan hasil kueri baru
       let qid = result.SQ.value;
       if (!(qid in Records)) Records[qid] = new Record(false);
