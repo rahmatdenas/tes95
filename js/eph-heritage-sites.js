@@ -301,8 +301,19 @@ if (provInput === 'luar_negeri') {
     
     baseQuery = KUMPULAN_KUERI_0['luar_negeri'];
     
-    let dynamicQuery = baseQuery
-      .replace(/<PLACEHOLDER_JENIS>/g, inputTxt)
+    let dynamicQuery = baseQuery;
+
+    // KUNCI PERBAIKAN: Cegah bentrokan "apapun"
+    if (inputTxt.toLowerCase() === 'apapun') {
+      // Hapus baris pembatas jenis agar kueri mengambil objek apa saja
+      dynamicQuery = dynamicQuery.replace(/VALUES \?j \{ <PLACEHOLDER_JENIS> \}/g, '');
+    } else {
+      // Jika bukan apapun, replace seperti biasa
+      dynamicQuery = dynamicQuery.replace(/<PLACEHOLDER_JENIS>/g, inputTxt);
+    }
+    
+    // Lanjutkan replace sisanya
+    dynamicQuery = dynamicQuery
       .replace(/<PLACEHOLDER_NEGARA>/g, negaraValue)
       .replace(/<PLACEHOLDER_PROP_LOKASI>/g, propLokasi)
       .replace(/<PLACEHOLDER_PROP_TAHUN>/g, propTahun);
