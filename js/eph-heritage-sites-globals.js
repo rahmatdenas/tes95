@@ -88,17 +88,16 @@ WHERE {
       VALUES ?j { <PLACEHOLDER_JENIS> }
       
       # 1. WAJIB: Cari entitas yang negaranya adalah terpilih, dan catat lokasi spesifiknya di ?l
-      ?s wdt:P31 ?j ;
-         wdt:P17 <PLACEHOLDER_NEGARA> ;
+      ?s wdt:P17 <PLACEHOLDER_NEGARA> ;
+         wdt:P31 ?j ;
          wdt:<PLACEHOLDER_PROP_LOKASI> ?l .
          
-      # 2. OPSIONAL: Coba cari ?p (wilayah 1 tingkat di bawah negara) yang menaungi ?l
+      # 2. OPSIONAL: Evaluasi Bottom-Up (Lokasi ke Negara)
       OPTIONAL {
-        ?p wdt:P131 <PLACEHOLDER_NEGARA> . 
         ?l wdt:P131* ?p .
+        ?p wdt:P131 <PLACEHOLDER_NEGARA> .
       }
     }
-    ORDER BY ?s ?p ?l
     <PLACEHOLDER_LIMIT_OFFSET>
   }
   OPTIONAL {
