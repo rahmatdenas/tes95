@@ -119,7 +119,7 @@ loadingTimeoutToken = setTimeout(() => {
       
       // Pastikan statusnya memang masih mencari data (isFetching = true)
       if (loadingDesc && isFetching) {
-        loadingDesc.innerHTML = `Data yang ditarik terlalu banyak. Harap menunggu, proses ini bisa memakan waktu 3-5 menit...`;
+        loadingDesc.innerHTML = `Data yang ditarik mencapai ribuan. Harap menunggu, proses ini bisa memakan waktu 3-5 menit...`;
       }
     }, 5000); // Set 5000 (5 detik)
     // =========================================================
@@ -401,7 +401,6 @@ function fetchWdqsRaw(query) {
   });
 }
 
-// FUNGSI BARU #2: Retry otomatis kalau kena PARSE_ERROR / NETWORK_ERROR / 502
 async function fetchWdqsRawWithRetry(query, maxRetry = 3) {
   for (let attempt = 1; attempt <= maxRetry; attempt++) {
     try {
@@ -409,13 +408,11 @@ async function fetchWdqsRawWithRetry(query, maxRetry = 3) {
       // +++ PERBAIKAN UX: LAPORKAN SEBELUM MENCOBA ULANG +++
       // =========================================================
       if (attempt > 1) {
-let progressText = document.querySelector('#index-list p');
-
-// Jika ini adalah putaran halaman kedua, ketiga, dan seterusnya
-if (progressText && halaman > 1) {
-  // Tambahkan nomor halaman agar pengguna tahu prosesnya terus berjalan
-  progressText.innerHTML = `Melanjutkan penarikan data halaman ${halaman}...`;
-}
+        let progressText = document.querySelector('#index-list p');
+        if (progressText) {
+          // Kembalikan ke teks aslinya khusus untuk percobaan ulang
+          progressText.innerHTML = `Sedang melakukan percobaan ulang (${attempt}/${maxRetry})...`;
+        }
       }
 
       return await fetchWdqsRaw(query);
@@ -488,7 +485,7 @@ async function queryWdqsPaginated(queryTemplate, processEachResult, postprocessC
     } else {
        // Masih ada halaman berikutnya
        if (progressText) {
-         progressText.textContent = `Selesai menarik ${totalDataTerkumpul} data. Masih terdapat ribuan data lagi...`;
+         progressText.textContent = `Selesai menarik ${totalDataTerkumpul} data. Penarikan data masih berlangsung...`;
        }
     }
 
