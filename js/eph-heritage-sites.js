@@ -71,6 +71,13 @@ function loadPrimaryData() {
       // =========================================================
       applyIntersectionFilter(); 
       processHashChange();
+
+      // +++ TAMBAHAN BARU: BANGUNKAN TOMBOL "SEMUA HASIL" +++
+      let btnAll = document.getElementById('btn-all');
+      if (btnAll) {
+        btnAll.classList.remove('disabled'); // Buka gemboknya
+        btnAll.classList.add('active');      // Nyalakan warnanya sebagai status bawaan
+      }
       
       // =========================================================
       // +++ KUNCI SEMENTARA TOMBOL FILTER MENGGUNAKAN CLASS +++
