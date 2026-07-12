@@ -47,9 +47,6 @@ Map.on('popupopen', function(e) {
     let qid = e.popup._qid;
     let record = Records[qid];
     
-    // 1. Panggil panel detail di samping
-    displayRecordDetails(qid); 
-    
     // 2. INJEKSI GAMBAR POPUP
     if (record.imageFilename && !e.popup._hasImage) {
       
