@@ -822,43 +822,31 @@ mapMarker.bindPopup(record.title, {
       });
 
       // =======================================================
-      // +++ LOGIKA KLIK KEDUA YANG ANTI-BUG (KHUSUS MOBILE) +++
+      // +++ LOGIKA KLIK KEDUA: SENSOR SENTUH KHUSUS MOBILE +++
       // =======================================================
       
-      // 1. Tandai marker secara diam-diam saat popup-nya terbuka
- mapMarker.on('popupopen', function() {
-        setTimeout(() => {
-          this._popupSedangAktif = true;
-        }, 50);
+      // 1. Rekam status TEPAT saat jari menyentuh marker (touchstart untuk HP, mousedown untuk PC)
+      mapMarker.on('mousedown touchstart', function() {
+        this._bukaSaatDisentuh = this.isPopupOpen();
       });
 
-      // 2. KUNCI PERBAIKAN: Beri jeda sebelum menghapus tanda!
-      mapMarker.on('popupclose', function() {
-        // Beri jeda 150ms agar event 'click' di bawah sempat membaca status ini
-        // sebelum benar-benar di-false-kan.
-        setTimeout(() => {
-          this._popupSedangAktif = false;
-        }, 150);
-      });
-
-      // 3. Logika utama saat marker diklik
+      // 2. Eksekusi pemanggilan panel saat klik / ketukan selesai
       mapMarker.on('click', function() {
-        // Karena ada jeda 150ms di atas, sensor ini masih bernilai TRUE saat diklik kedua!
-        if (this._popupSedangAktif) {
+        
+        if (this._bukaSaatDisentuh) {
+          // --- INI PASTI KLIK KEDUA (Popup sudah terbuka) ---
           
-          // ...maka ini PASTI klik kedua! Tarik panelnya:
-          // PENTING: Pastikan ini adalah fungsi asli Anda untuk menarik panel
           if (typeof window.setMobilePanelExpanded === 'function') {
-            window.setMobilePanelExpanded(true);
-          } else {
-            console.warn("Peringatan: Fungsi setMobilePanelExpanded tidak ditemukan!");
+            // Panggil fungsi asli Anda: expand = true, animate = true
+            window.setMobilePanelExpanded(true, true);
           }
           
-          // Lawan sifat asli Leaflet yang mencoba menutup popup di klik kedua
+          // Tahan popup agar tidak tertutup otomatis oleh Leaflet
           setTimeout(() => { 
             this.openPopup(); 
           }, 10);
         }
+        
       });
       // =======================================================
           let popup = mapMarker.getPopup();
