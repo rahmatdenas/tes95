@@ -56,7 +56,7 @@ let imgHtml = `
 <div style="text-align:center; margin-top:17px;margin-bottom: 5px;">
               <img src="${imgUrl}" 
                    draggable="false" 
-                   style="width:100%; height:130px; object-fit:cover; border-radius:4px;" 
+                   style="width:100%; min-width:90px; height:130px; object-fit:cover; border-radius:4px;" 
                    alt="Thumbnail"
                    onload="let p = Records['${qid}'].popup; if (p && !p._sudahDiupdate) { p._sudahDiupdate = true; p.update(); }">
             </div>
