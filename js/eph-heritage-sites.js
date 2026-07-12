@@ -631,7 +631,46 @@ function populateImportantEventsData(qid) {
     function() {
       populateStatusAndCapacityData(qid); 
     }
-  );
+  ).catch(error => {
+    // =========================================================
+    // +++ JARING PENGAMAN 1 +++
+    // =========================================================
+    console.warn("Gagal menarik data peristiwa historis (offline).", error);
+    // Walaupun gagal, kita PAKSA panggil fungsi berikutnya agar rantai loading tidak macet
+    populateStatusAndCapacityData(qid);
+  });
+}
+
+function populateStatusAndCapacityData(qid) {
+  let record = Records[qid];
+  let queryStr = getSparqlQuery6(qid); 
+
+  // Buat objek kosong untuk menampung semua atribut spesifik
+  record.dynamicProps = {};
+
+  return queryWdqsThenProcess(
+    queryStr,
+    function(result) {
+      // Looping otomatis: simpan apapun yang berhasil didapat dari Wikidata!
+      Object.keys(result).forEach(key => {
+        if (key !== 'siteQid' && result[key].value) {
+          record.dynamicProps[key] = result[key].value;
+        }
+      });
+    },
+    function() {
+      renderDynamicDataInPanel(qid); 
+    }
+  ).catch(error => {
+    // =========================================================
+    // +++ JARING PENGAMAN 2 +++
+    // =========================================================
+    console.warn("Gagal menarik data kapasitas/status (offline).", error);
+    // Walaupun gagal, kita PAKSA panggil renderDynamicDataInPanel.
+    // Fungsi render tersebut akan melihat datanya kosong, tidak mencetak apa-apa, 
+    // tapi akan tetap menjalankan container.remove() untuk membunuh animasi loading!
+    renderDynamicDataInPanel(qid);
+  });
 }
 
 function populateStatusAndCapacityData(qid) {
