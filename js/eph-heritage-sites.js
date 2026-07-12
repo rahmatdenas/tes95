@@ -673,29 +673,6 @@ function populateStatusAndCapacityData(qid) {
   });
 }
 
-function populateStatusAndCapacityData(qid) {
-  let record = Records[qid];
-  let queryStr = getSparqlQuery6(qid); 
-
-  // Buat objek kosong untuk menampung semua atribut spesifik
-  record.dynamicProps = {};
-
-  return queryWdqsThenProcess(
-    queryStr,
-    function(result) {
-      // Looping otomatis: simpan apapun yang berhasil didapat dari Wikidata!
-      Object.keys(result).forEach(key => {
-        if (key !== 'siteQid' && result[key].value) {
-          record.dynamicProps[key] = result[key].value;
-        }
-      });
-    },
-    function() {
-      renderDynamicDataInPanel(qid); 
-    }
-  );
-}
-
 function renderDynamicDataInPanel(qid) {
   let record = Records[qid];
   
