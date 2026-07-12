@@ -741,7 +741,7 @@ else if (key === 'panjang' || key === 'tinggi' || key === 'lebar') {
         formattedValue = parseInt(rawValue).toLocaleString('id-ID') + " mdpl";
       }
 else if (key === 'lamanResmi') {
-  const displayUrl = rawValue.replace(/^https?:\/\/(www\.)?/, '');
+  const displayUrl = rawValue.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
   formattedValue = `<span class="koordinat-link"><a href="${rawValue}" target="_blank" rel="noopener noreferrer" style="word-break: break-all;">${displayUrl}</a></span>`;
 }
 else if (key === 'tglTemu' || key === 'tglWafat' || key === 'berakhirPada'){
