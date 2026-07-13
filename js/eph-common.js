@@ -902,6 +902,25 @@ function jalankanFilterGPS(selectElem) {
       // 2. Kembalikan teks dan setel status filter
       selectElem.options[selectElem.selectedIndex].text = "Sekitar Anda (10 km)";
       currentRegionFilter = 'terdekat';
+
+      if (userLocationMarker) Map.removeLayer(userLocationMarker);
+      if (userRadiusCircle) Map.removeLayer(userRadiusCircle);
+
+      // 2. Buat Lingkaran Merah Transparan (Radius dalam meter)
+      userRadiusCircle = L.circle([userLocation.lat, userLocation.lon], {
+        color: '#882222',       // Warna garis tepi (samakan dengan warna tema webmu)
+        fillColor: '#882222',   // Warna isi
+        fillOpacity: 0.1,       // Sangat transparan
+        radius: 10000           // 10.000 meter = 10 km
+      }).addTo(Map);
+
+      // 3. Buat Titik Tengah (Bisa pakai ikon bawaan Leaflet)
+      userLocationMarker = L.marker([userLocation.lat, userLocation.lon])
+        .addTo(Map)
+        .bindPopup("<b>Lokasi Anda</b><br>Menampilkan situs dalam radius 10 km.");
+
+      // 4. Paksa Peta Terbang Menyesuaikan Layar dengan Besar Lingkaran
+      Map.fitBounds(userRadiusCircle.getBounds());
       
       // 3. SEKARANG baru panggil saringan master Anda!
       applyIntersectionFilter(); 
