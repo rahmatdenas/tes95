@@ -268,6 +268,29 @@ Map = new L.map('map', {
   // 3. Tombol Layer otomatis akan ditambahkan di bawah teks atribusi
   L.control.layers(baseMaps, null, {position: 'topleft'}).addTo(Map);
   L.control.zoom({ position: 'bottomright' }).addTo(Map);
+
+  // SIMPAN KE VARIABEL GLOBAL
+  window.TombolGPSMap = L.control.locate({ 
+    position: 'bottomright', 
+    showCompass: false, 
+    strings: { title: "Tunjukkan lokasi saya" },
+    icon: 'ikon-gps-custom' 
+  }).addTo(Map);
+
+  // Jika tombol GPS bawaan ditekan (Aktif), sembunyikan titik buatan "Sekitar Anda" (Aneh sih kok boros)
+  Map.on('locateactivate', function() {
+    if (userLocationMarker) {
+      Map.removeLayer(userLocationMarker);
+    }
+  });
+
+  // Jika tombol GPS bawaan dimatikan, dan mode "Sekitar Anda" masih aktif, munculkan lagi titiknya (Aneh sih kok boros)
+  Map.on('locatedeactivate', function() {
+    if (typeof currentRegionFilter !== 'undefined' && currentRegionFilter === 'terdekat' && userLocationMarker) {
+      userLocationMarker.addTo(Map);
+    }
+  });
+  
 L.control.locate({ 
     position: 'bottomright', 
     showCompass: false, 
@@ -902,8 +925,8 @@ function jalankanFilterGPS(selectElem) {
       // 2. Kembalikan teks dan setel status filter
       selectElem.options[selectElem.selectedIndex].text = "Sekitar Anda (10 km)";
       currentRegionFilter = 'terdekat';
-
-      if (userLocationMarker) Map.removeLayer(userLocationMarker);
+if (window.TombolGPSMap) window.TombolGPSMap.stop();
+if (userLocationMarker) Map.removeLayer(userLocationMarker);
       if (userRadiusCircle) Map.removeLayer(userRadiusCircle);
 
       // 2. Buat Lingkaran Merah Transparan (Radius dalam meter)
@@ -914,12 +937,17 @@ function jalankanFilterGPS(selectElem) {
         radius: 10000           // 10.000 meter = 10 km
       }).addTo(Map);
 
+let ikonDenyut = L.divIcon({
+        className: 'titik-gps-denyut',
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+      });
+      
       // 3. Buat Titik Tengah (Bisa pakai ikon bawaan Leaflet)
-      userLocationMarker = L.marker([userLocation.lat, userLocation.lon])
+userLocationMarker = L.marker([userLocation.lat, userLocation.lon], { icon: ikonDenyut })
         .addTo(Map)
         .bindPopup("<b>Lokasi Anda</b><br>Menampilkan situs dalam radius 10 km.");
 
-      // 4. Paksa Peta Terbang Menyesuaikan Layar dengan Besar Lingkaran
       Map.fitBounds(userRadiusCircle.getBounds());
       
       // 3. SEKARANG baru panggil saringan master Anda!
