@@ -134,6 +134,10 @@ nav li.active > a, nav li > a.active {
   color: #fff !important;
 }
 
+#submenu-atas  {
+box-shadow: 0 3px 0 0px #822;
+}
+
 #submenu-atas li a {
   padding: 10px 20px 10px 20px;
 }
