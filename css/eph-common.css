@@ -280,6 +280,16 @@ select::-moz-focus-inner {
   outline: none !important;
 }
 
+select:focus,
+input:focus,
+textarea:focus,
+.filter-box select:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  /* Safari kadang menggunakan border rahasia untuk focus ring */
+  -webkit-appearance: none;
+}
+
 optgroup {
   padding: 6px 6px 3px;
   font-size: 11px;
