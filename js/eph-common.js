@@ -998,6 +998,19 @@ function updateNavigationUI(fragment) {
   
   if (!navStandar || !navDetail) return;
 
+  // =======================================================
+  // KUNCI PERBAIKAN A: SAPU JAGAT SUBMENU
+  // Selalu paksa tutup submenu setiap kali URL berubah (cegah bug hashtag)
+  // =======================================================
+  let subMenuAtas = document.getElementById('submenu-atas');
+  let btnMenuInduk = document.getElementById('btn-menu-induk');
+  
+  if (subMenuAtas) subMenuAtas.style.display = 'none';
+  if (btnMenuInduk && btnMenuInduk.parentElement) {
+      btnMenuInduk.parentElement.classList.remove('selected', 'active');
+  }
+  // =======================================================
+
   // Deteksi apakah yang sedang dibuka adalah Detail Butir yang valid
   let isDetailView = (fragment !== '' && fragment !== 'hasil' && fragment !== 'about' && PrimaryDataIsLoaded && (fragment in Records));
 
@@ -1057,25 +1070,25 @@ if (currentIndex === -1) {
 // KEMBALI KE MODE STANDAR (Beranda | Hasil | Tentang)
     navStandar.style.display = 'flex';
     navDetail.style.display = 'none';
+    // 1. SAPU BERSIH SEMUA STATUS AKTIF TERLEBIH DAHULU
+  document.querySelectorAll('#nav-standar > li, #nav-detail > li').forEach(li => {
+    li.classList.remove('selected', 'active');
+  });
+
+  // 2. NYALAKAN KEMBALI HANYA JIKA HASHTAG-NYA COCOK
+  document.querySelectorAll('#nav-standar > li, #nav-detail > li').forEach(li => {
+    let link = li.querySelector('a'); 
+    if (!link) return;
+    let hrefVal = link.getAttribute('href');
     
-    // KUNCI: Gunakan anak langsung (> li) agar tidak salah sasaran ke dalam submenu
-    document.querySelectorAll('#nav-standar > li, #nav-detail > li').forEach(li => {
-      let link = li.querySelector('a'); // Ini akan membidik tautan induk utama
-      if (!link) return;
-      let hrefVal = link.getAttribute('href');
-      
-      // Matikan deteksi otomatis Beranda (''), biarkan Hasil dan Tentang saja yang otomatis
-      if (fragment === 'hasil' && hrefVal === '#hasil') {
-        li.classList.add('selected');
-      } 
-      else if (fragment === 'about' && hrefVal === '#about') {
-        li.classList.add('selected');
-      } 
-      else {
-        li.classList.remove('selected');
-      }
-    });
-  }
+    if (fragment === 'hasil' && hrefVal === '#hasil') {
+      li.classList.add('selected');
+    } 
+    else if (fragment === 'about' && hrefVal === '#about') {
+      li.classList.add('selected');
+    } 
+  });
+}
 }
 
 // ============================================================
