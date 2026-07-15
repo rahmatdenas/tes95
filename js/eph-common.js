@@ -35,7 +35,6 @@ var lastValidHash   = 'landing';
 var isRevertingHash = false;
 var loadingTimeoutToken = null;
 var searchDebounceToken = null;
-var isTerbangViaNavigasi = false;
 
 const ikonTetesanAir = L.divIcon({
   className: 'ikon-marker-ringan',
@@ -116,15 +115,6 @@ document.addEventListener('click', function(e) {
     }
   });
   processHashChange();
-let navDetail = document.getElementById('nav-detail');
-  if (navDetail) {
-    navDetail.addEventListener('click', function(e) {
-      if (e.target.closest('#btn-prev') || e.target.closest('#btn-next')) {
-        isTerbangViaNavigasi = true; // <--- Lapor ke detektif!
-      }
-    });
-  }
-  
 }
 
 
@@ -718,11 +708,7 @@ function activateMapMarker(qid) {
 
   try {
     Map.closePopup();
-    Map.stop(); // Hentikan animasi apapun yang sedang berjalan
-
-    // 1. Tangkap laporan dari detektif ke dalam variabel lokal
-    let gunakanTerbang = isTerbangViaNavigasi;
-    let opsiTerbang = { duration: 1.5, easeLinearity: 0.25 };
+    Map.stop();
 
     let countSameLocation = 0;
     currentFilteredRecords.forEach(r => {
@@ -731,23 +717,11 @@ function activateMapMarker(qid) {
       }
     });
 
-    // Fungsi kecil pembantu untuk membuka popup dengan aman
-    const bukaPopupAman = () => {
-      if (window.location.hash !== '#' + qid) return;
-      if (!record.popup.isOpen()) record.mapMarker.openPopup();
-    };
-
-    // =======================================================
-    // LOGIKA PERGERAKAN PETA
-    // =======================================================
     if (countSameLocation > 60) {
-      if (gunakanTerbang) {
-        Map.flyTo([record.lat, record.lon], TILE_LAYER_MAX_ZOOM, opsiTerbang);
-      } else {
-        Map.setView([record.lat, record.lon], TILE_LAYER_MAX_ZOOM);
-      }
-      
+      Map.setView([record.lat, record.lon], TILE_LAYER_MAX_ZOOM);
       setTimeout(() => {
+        // --- KUNCI PENANGKAL 1 ---
+        // Kalau URL sudah bukan QID ini lagi (misal user udah klik Hasil), batalkan efeknya!
         if (window.location.hash !== '#' + qid) return;
         
         let visibleParent = Cluster.getVisibleParent(record.mapMarker);
@@ -757,40 +731,26 @@ function activateMapMarker(qid) {
             if (visibleParent._icon) visibleParent._icon.classList.remove('cluster-efek-denyut');
           }, 4500);
         }
-      }, gunakanTerbang ? 1600 : 350); // Jeda tunggu lebih lama jika sedang terbang
-    } 
-    else {
+      }, 350);
+    } else {
       if (Cluster.hasLayer(record.mapMarker)) {
-        
-        if (gunakanTerbang) {
-          // KUNCI PERBAIKAN: Terbang dulu, tunggu mendarat (moveend), baru buka klaster!
-          let zoomTarget = Math.max(Map.getZoom(), 15); // Jaga agar zoom tidak terlalu jauh
-          Map.flyTo([record.lat, record.lon], zoomTarget, opsiTerbang);
-          
-          Map.once('moveend', function() {
-            Cluster.zoomToShowLayer(record.mapMarker, bukaPopupAman);
-          });
-        } else {
-          // Jika diklik dari daftar, gunakan geser biasa bawaan klaster
-          Cluster.zoomToShowLayer(record.mapMarker, bukaPopupAman);
-        }
+        Cluster.zoomToShowLayer(
+          record.mapMarker,
+          function() {
+            // --- KUNCI PENANGKAL 2 ---
+            // Kalau animasi mekar selesai tapi user udah balik ke Index, JANGAN buka popup!
+            if (window.location.hash !== '#' + qid) return;
 
+            if (!record.popup.isOpen()) record.mapMarker.openPopup();
+          }
+        );
       } else {
-        // Kondisi jika marker tidak sedang di dalam klaster (sudah zoom maksimal)
-        if (gunakanTerbang) {
-          Map.flyTo([record.lat, record.lon], Map.getZoom(), opsiTerbang);
-          Map.once('moveend', bukaPopupAman);
-        } else {
-          Map.setView([record.lat, record.lon], Map.getZoom());
-          bukaPopupAman();
-        }
+        Map.setView([record.lat, record.lon], Map.getZoom());
+        if (!record.popup.isOpen()) record.mapMarker.openPopup();
       }
     }
   } catch (error) {
     console.warn("Interupsi animasi peta dicegat:", error);
-  } finally {
-    // Apapun yang terjadi, kembalikan status detektif ke normal (geser biasa)
-    isTerbangViaNavigasi = false; 
   }
 }
 
@@ -1172,24 +1132,22 @@ window.addEventListener('keydown', function(e) {
 window.addEventListener('keyup', function(e) {
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
-if (e.key === 'ArrowLeft') {
-    isArrowLeftHeld = false; 
+  if (e.key === 'ArrowLeft') {
+    isArrowLeftHeld = false; // Lepas kuncian
+    
     let btnPrev = document.getElementById('btn-prev');
     if (btnPrev && btnPrev.hasAttribute('href') && btnPrev.style.pointerEvents !== 'none') {
-      btnPrev.classList.remove('active'); 
-      
-      isTerbangViaNavigasi = true; // <--- KUNCI: Lapor ke detektif!
-      window.location.hash = btnPrev.getAttribute('href'); 
+      btnPrev.classList.remove('active'); // Matikan efek
+      window.location.hash = btnPrev.getAttribute('href'); // EKSEKUSI PINDAH!
     }
   } 
   else if (e.key === 'ArrowRight') {
-    isArrowRightHeld = false; 
+    isArrowRightHeld = false; // Lepas kuncian
+    
     let btnNext = document.getElementById('btn-next');
     if (btnNext && btnNext.hasAttribute('href') && btnNext.style.pointerEvents !== 'none') {
-      btnNext.classList.remove('active'); 
-      
-      isTerbangViaNavigasi = true; // <--- KUNCI: Lapor ke detektif!
-      window.location.hash = btnNext.getAttribute('href'); 
+      btnNext.classList.remove('active'); // Matikan efek
+      window.location.hash = btnNext.getAttribute('href'); // EKSEKUSI PINDAH!
     }
   }
 });
