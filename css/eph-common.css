@@ -581,7 +581,7 @@ height: 16px;
 
 #details figure img.loading {
   background: #eee;
-   max-height: 100px;
+   max-height: 0px;
 }
 
 #details figcaption {
