@@ -492,11 +492,11 @@ async function fetchWdqsRawWithRetry(query, maxRetry = 3, offsetLabel = '') {
 
 // FUNGSI BARU #3: Loop LIMIT/OFFSET, PAKAI JUMLAH ENTITAS UNIK (?SQ) sebagai penanda halaman terakhir
 // (bukan jumlah baris mentah — karena satu entitas bisa punya >1 baris akibat OPTIONAL tanggal ganda)
-async function queryWdqsPaginated(queryTemplate, processEachResult, postprocessCallback, chunkSize = 5000) {
+Berikut versi queryWdqsPaginated dengan blok itu dihapus (karena sudah terbukti dead code, tidak pernah tereksekusi):
+jsasync function queryWdqsPaginated(queryTemplate, processEachResult, postprocessCallback, chunkSize = 5000) {
   let offset = 0;
   let halaman = 1;
   let totalDataTerkumpul = 0; 
-
   try {
     while (true) {
       let pagedQuery = queryTemplate.replace(
@@ -504,11 +504,8 @@ async function queryWdqsPaginated(queryTemplate, processEachResult, postprocessC
         `LIMIT ${chunkSize} OFFSET ${offset}`
       );
 
-      let progressText = document.querySelector('#index-list p');
-      if (progressText && progressText.innerHTML.includes('gagal')) {
-        progressText.innerHTML = `Melanjutkan penarikan data...`;
-      }
-
+      // Jika jaringan dibatalkan (abort), fetchWdqsRawWithRetry akan melempar error
+      // Error tersebut akan langsung ditangkap oleh blok catch di bawah
       let bindings = await fetchWdqsRawWithRetry(pagedQuery, 3, ` (offset ${offset})`);
       
       // =========================================================
@@ -520,25 +517,22 @@ async function queryWdqsPaginated(queryTemplate, processEachResult, postprocessC
       }
       
       bindings.forEach(processEachResult);
-
       let kombinasiUnik = new Set(
         bindings.map(b => `${b.SQ.value}|${b.PQ ? b.PQ.value : ''}|${b.LQ ? b.LQ.value : ''}`)
       ).size;
-
       // Tambahkan data halaman ini ke total keseluruhan
       totalDataTerkumpul += kombinasiUnik;
       
       console.log(`[Halaman ${halaman}] Kombinasi (s,p,l) unik:`, kombinasiUnik);
-
       // Cek apakah ini halaman terakhir atau bukan untuk menentukan teks yang pas
-if (kombinasiUnik < chunkSize) {
-   break; // Loop berhenti secara normal, tanpa update teks
-} else {
-   if (progressText) {
-     progressText.textContent = `Selesai menarik ${totalDataTerkumpul} data. Penarikan data masih berlangsung...`;
-   }
-}
-
+      if (kombinasiUnik < chunkSize) {
+         break; // Loop berhenti secara normal, tanpa update teks
+      } else {
+         let progressText = document.querySelector('#index-list p');
+         if (progressText) {
+           progressText.textContent = `Selesai menarik ${totalDataTerkumpul} data. Penarikan data masih berlangsung...`;
+         }
+      }
       offset += chunkSize;
       halaman++;
     }
@@ -554,7 +548,6 @@ if (kombinasiUnik < chunkSize) {
       throw error;
     }
   }
-
   // Baris ini hanya dieksekusi jika loop while break secara normal (bukan karena error/dibatalkan)
   if (postprocessCallback) postprocessCallback();
 }
