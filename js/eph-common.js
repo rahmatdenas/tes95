@@ -48,38 +48,26 @@ function tampilkanDialog(pesan, tipe = 'alert', judul = 'Perhatian') {
     let btnNo = document.getElementById('eph-dialog-btn-no');
 
     titleElem.textContent = judul;
-    msgElem.innerHTML = pesan; 
+    msgElem.innerHTML = pesan; // Menggunakan innerHTML agar mendukung tag <br> atau <b>
 
     if (tipe === 'confirm') {
       btnNo.style.display = 'inline-block';
       btnYes.textContent = 'Ya';
     } else {
-      btnNo.style.display = 'none'; 
-      btnYes.textContent = 'Tutup'; // <--- Teks diubah menjadi "Tutup"
+      btnNo.style.display = 'none'; // Sembunyikan tombol batal untuk mode Alert
+      btnYes.textContent = 'OK';
     }
 
     overlay.classList.add('aktif');
 
-    // Fungsi pembantu agar bersih dari bentrok memori
-    const tutupDanBersihkan = (nilai) => {
+    btnYes.onclick = function() {
       overlay.classList.remove('aktif');
-      btnYes.onclick = null;
-      btnNo.onclick = null;
-      overlay.onclick = null;
-      resolve(nilai);
+      resolve(true);
     };
 
-    // Tutup saat tombol ditekan
-    btnYes.onclick = () => tutupDanBersihkan(true);
-    btnNo.onclick = () => tutupDanBersihkan(false);
-
-    // +++ TAMBAHAN UX SELULER +++
-    // Jika area hitam (overlay) di luar kotak diklik, otomatis tutup!
-    // (Hanya berlaku untuk mode "alert". Untuk "confirm", user harus pilih Ya/Batal).
-    overlay.onclick = function(e) {
-      if (e.target === overlay && tipe === 'alert') {
-        tutupDanBersihkan(true);
-      }
+    btnNo.onclick = function() {
+      overlay.classList.remove('aktif');
+      resolve(false);
     };
   });
 }
@@ -444,16 +432,13 @@ Cluster = new L.markerClusterGroup({
     let maxZoom = TILE_LAYER_MAX_ZOOM; 
     
     // Skenario 1: Jika sudah di zoom maksimal ATAU titiknya benar-benar bertumpuk
-if (currentZoom >= maxZoom || isSamePoint) {
+    if (currentZoom >= maxZoom || isSamePoint) {
       if (count > 60) {
-        // KUNCI PERBAIKAN: Gunakan fungsi dialog kustom kita, hapus setTimeout!
-        tampilkanDialog(
-          `Terlalu banyak data di titik ini (<b>${count} item</b>).<br><br>Untuk melihatnya, silakan buka daftar indeks dan persempit pencarian wilayah.`, 
-          "alert", 
-          "Titik Terlalu Padat"
-        );
+setTimeout(() => {
+          alert(`Terlalu banyak data di titik ini (${count} item). Untuk melihat, buka daftar dan pilih wilayah terkait.`);
+        }, 50); 
       } else {
-                // Jika masih di bawah 60, izinkan mekar (spiderfy)
+        // Jika masih di bawah 60, izinkan mekar (spiderfy)
         cluster.spiderfy();
       }
     } else {
