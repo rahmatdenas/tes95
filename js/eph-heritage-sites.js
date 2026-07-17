@@ -477,7 +477,7 @@ async function populateCoordinatesData() {
     let progressText = document.querySelector('#index-list p');
     if (progressText) {
       let persentase = Math.round((i / kelompokCicilan.length) * 100);
-      progressText.innerHTML = `Membangun peta koordinat... (${persentase}%)`;
+      progressText.innerHTML = `Menyusun koordinat... (${persentase}%)`;
     }
 
     // Eksekusi 4 peluru bersamaan
