@@ -428,11 +428,8 @@ Cluster = new L.markerClusterGroup({
     let bounds = cluster.getBounds();
     let isSamePoint = bounds.getSouthWest().equals(bounds.getNorthEast());
     
-    let currentZoom = Map.getZoom();
+    let currentZoom = Math.round(Map.getZoom());
     let maxZoom = TILE_LAYER_MAX_ZOOM; 
-    
-    // Skenario 1: Jika sudah di zoom maksimal ATAU titiknya benar-benar bertumpuk
-let currentZoom = Math.round(Map.getZoom());  // bulatkan dulu
 if (currentZoom >= maxZoom || isSamePoint) {
       if (count > 60) {
 setTimeout(() => {
