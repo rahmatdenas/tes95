@@ -432,7 +432,8 @@ Cluster = new L.markerClusterGroup({
     let maxZoom = TILE_LAYER_MAX_ZOOM; 
     
     // Skenario 1: Jika sudah di zoom maksimal ATAU titiknya benar-benar bertumpuk
-    if (currentZoom >= maxZoom || isSamePoint) {
+let currentZoom = Math.round(Map.getZoom());  // bulatkan dulu
+if (currentZoom >= maxZoom || isSamePoint) {
       if (count > 60) {
 setTimeout(() => {
           alert(`Terlalu banyak data di titik ini (${count} item). Untuk melihat, buka daftar dan pilih wilayah terkait.`);
@@ -781,7 +782,7 @@ function activateMapMarker(qid) {
   try {
     Map.closePopup();
     Map.stop();
-
+Map.setZoom(Map.getZoom());
     let countSameLocation = 0;
     currentFilteredRecords.forEach(r => {
       if (r.lat === record.lat && r.lon === record.lon) {
